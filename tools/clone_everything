@@ -6,6 +6,11 @@ import subprocess
 from oca_projects import OCA_REPOSITORY_NAMES, url
 import os
 
+def run_output(l, cwd=None):
+    #log("run_output",l)
+    #print "run output:", ' '.join( l ), "into", cwd
+    return subprocess.Popen(l, stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
+
 
 def clone(organization_remotes=None):
     for project in OCA_REPOSITORY_NAMES:
@@ -22,6 +27,51 @@ def clone(organization_remotes=None):
                 cmd = ['git', '--git-dir=' + os.path.join(project, '.git'),
                        'fetch', organization_remote]
                 subprocess.call(cmd)
+
+                branch = '7.0'
+                suffix_branch = 'autofix-script-01-dev-moylop260'
+                branch_new = branch + '-' + suffix_branch
+                commit_msg = '[REF] auto-fix conventions'
+                main_project = 'oca'
+
+                #cmd = ['git', 'branch', '-D', branch_new]
+                #subprocess.call(cmd)
+
+                cmd = ['git', '--git-dir=' + os.path.join(project, '.git'),
+                       '--work-tree=' + project,
+                       'checkout', '-b', '%s' % (branch_new),
+                       '--track', '%s/%s' % (main_project, branch)]
+                subprocess.call(cmd)
+
+                cmd = ['git', 'stash']
+                run_output(cmd, cwd=project)
+
+                cmd = ['git', 'diff']
+                diff = run_output(cmd, cwd=project)
+                if diff:
+                    print project + ' has a diff before of'\
+                          ' run auto-fix script.'
+                    continue
+
+                cmd = [
+                    '/Users/moylop260/openerp/instancias/odoo_git_clone/'
+                    'community-addons/pylint-conf/fix_unused_imports/'
+                    'replace_import.py', project, 'all'
+                ]
+                subprocess.call(cmd)
+
+                cmd = ['git', 'diff']
+                diff = run_output(cmd, cwd=project)
+                if diff:
+                    cmd = ['git', '--git-dir=' + os.path.join(project, '.git'),
+                           'commit', '-am', commit_msg]
+                    subprocess.call(cmd)
+
+                    cmd = ['git', '--git-dir=' + os.path.join(project, '.git'),
+                           'push', organization_remote, branch_new]
+
+                    import pdb;pdb.set_trace()
+                    subprocess.call(cmd)
 
 
 def main():
