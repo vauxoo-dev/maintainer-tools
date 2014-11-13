@@ -63,14 +63,12 @@ def clone(organization_remotes=None):
                 cmd = ['git', 'diff']
                 diff = run_output(cmd, cwd=project)
                 if diff:
-                    cmd = ['git', '--git-dir=' + os.path.join(project, '.git'),
-                           'commit', '-am', commit_msg]
-                    subprocess.call(cmd)
+                    cmd = ['git', 'commit', '-am', commit_msg]
+                    #import pdb;pdb.set_trace()
+                    run_output(cmd, cwd=project)
 
                     cmd = ['git', '--git-dir=' + os.path.join(project, '.git'),
-                           'push', organization_remote, branch_new]
-
-                    import pdb;pdb.set_trace()
+                           'push', '-f', organization_remote, branch_new]
                     subprocess.call(cmd)
 
 
