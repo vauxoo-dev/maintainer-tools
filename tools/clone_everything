@@ -4,6 +4,7 @@ import argparse
 import subprocess
 
 from oca_projects import OCA_REPOSITORY_NAMES, url
+from create_pull_request import create_pull_request
 import os
 
 def run_output(l, cwd=None):
@@ -49,8 +50,9 @@ def clone(organization_remotes=None):
                 cmd = ['git', 'diff']
                 diff = run_output(cmd, cwd=project)
                 if diff:
-                    print project + ' has a diff before of'\
+                    msg = project + ' has a diff before of'\
                           ' run auto-fix script.'
+                    open("error.log", "a").write(msg)
                     continue
 
                 cmd = [
@@ -58,7 +60,7 @@ def clone(organization_remotes=None):
                     'community-addons/pylint-conf/fix_unused_imports/'
                     'replace_import.py', project, 'all'
                 ]
-                subprocess.call(cmd)
+                #subprocess.call(cmd)
 
                 cmd = ['git', 'diff']
                 diff = run_output(cmd, cwd=project)
@@ -70,6 +72,16 @@ def clone(organization_remotes=None):
                     cmd = ['git', '--git-dir=' + os.path.join(project, '.git'),
                            'push', '-f', organization_remote, branch_new]
                     subprocess.call(cmd)
+                repo_base = url(project_name=project, protocol='https', org_name='OCA').replace('.git', '')
+                branch_base = branch
+
+                branch_dest = organization_remote + ':' + branch_new
+                title = commit_msg
+                comment = None
+                res_pr = create_pull_request(repo_base, branch_base, branch_dest, title, comment)
+                print "res_pr", res_pr
+                print "branch_dest", branch_dest
+                #import pdb;pdb.set_trace()
 
 
 def main():

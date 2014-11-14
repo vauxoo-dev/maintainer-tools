@@ -39,7 +39,7 @@ OCA_PROJECTS = {
     'account edge connector': ['connector-accountedge'],
     'connector LIMS': ['connector-lims'],
     'connector CMIS': ['connector-cmis'],
-    'connector magento': ['connector-magento'],
+    #'connector magento': ['connector-magento'],
     'connector prestashop': ['connector-prestashop'],
     'connector sage': ['connector-sage-50'],
     'crm sales': ['sale-workflow',
