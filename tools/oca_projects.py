@@ -12,6 +12,8 @@ OCA_REPOSITORY_NAMES: list of OCA repository names
 
 ALL = ['OCA_PROJECTS', 'OCA_REPOSITORY_NAMES', 'url']
 
+#OCA_PROJECTS = {'l10n-spain': ['l10n-spain'],}
+
 OCA_PROJECTS = {
     'accounting': ['account-analytic',
                    'account-budgeting',
