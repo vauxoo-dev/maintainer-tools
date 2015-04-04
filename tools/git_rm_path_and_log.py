@@ -7,7 +7,7 @@ import subprocess
 from oca_projects import url
 
 
-def get_project_path(project_name, org_name, branch=None, base_path='/tmp/'):
+def get_project_path(project_name, org_name, branch=None, base_path='/home/moylop260_2/branches_rm'):
     project_path = org_name + '__' + project_name
     if branch:
         project_path += '__' + branch.split('/')[-1]
@@ -105,6 +105,14 @@ def git_rm_path_log(project_path, path_to_remove):
     return run_output(cmd, cwd=project_path)
 
 
+def git_push(project_path, force=None):
+    cmd = ['git', '--git-dir=%s' % os.path.join(project_path, '.git'),
+           'push']
+    if force:
+        cmd += ['-f']
+    subprocess.call(cmd)
+    return True
+
 def rm_path_ang_log(project_name, org_name, paths_to_remove):
     clone(project_name, org_name)
     project_path = get_project_path(project_name, org_name)
@@ -116,7 +124,10 @@ def rm_path_ang_log(project_name, org_name, paths_to_remove):
         project_branch_path = get_project_path(project_name, org_name, branch_sp)
         for path_to_remove in paths_to_remove:
             git_rm_path_log(project_branch_path, path_to_remove)
-        #get_project_path(project_name, org_name, branch)
+        #import pdb;pdb.set_trace()
+        git_push(project_branch_path, force=True)
+        
+	#get_project_path(project_name, org_name, branch)
         #git_checkout(project_path, branch, branch.split('/')[-1])
         """
         git_checkout(project_path, branch, branch.split('/')[-1])
