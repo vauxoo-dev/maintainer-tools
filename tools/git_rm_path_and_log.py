@@ -7,8 +7,10 @@ import subprocess
 from oca_projects import url
 
 
-def get_project_path(project_name, org_name, base_path=None):
+def get_project_path(project_name, org_name, branch=None, base_path='/tmp/'):
     project_path = org_name + '__' + project_name
+    if branch:
+        project_path += '__' + branch.split('/')[-1]
     if base_path:
         project_path = os.path.join(base_path, project_path)
     return project_path
@@ -41,11 +43,13 @@ def get_all_branches(project_path, remote='origin'):
     return branches
 
 
-def clone(project_name, org_name, protocol='git'):
+def clone(project_name, org_name, branch=None, protocol='git'):
     if not os.path.isdir(os.path.join(project_name, '.git')):
         cmd = ['git', 'clone',
                url(project_name, org_name=org_name, protocol=protocol),
-               get_project_path(project_name, org_name)]
+               get_project_path(project_name, org_name, branch)]
+        if branch:
+            cmd = cmd + ['-b', branch]
         subprocess.call(cmd)
         return 1
     return -1
@@ -105,11 +109,21 @@ def rm_path_ang_log(project_name, org_name, paths_to_remove):
     clone(project_name, org_name)
     project_path = get_project_path(project_name, org_name)
     branches = get_all_branches(project_path)
+    #import pdb;pdb.set_trace
     for branch in branches:
+        branch_sp = branch.split('/')[-1]
+        clone(project_name, org_name, branch_sp)
+        project_branch_path = get_project_path(project_name, org_name, branch_sp)
+        for path_to_remove in paths_to_remove:
+            git_rm_path_log(project_branch_path, path_to_remove)
+        #get_project_path(project_name, org_name, branch)
+        #git_checkout(project_path, branch, branch.split('/')[-1])
+        """
         git_checkout(project_path, branch, branch.split('/')[-1])
         for path_to_remove in paths_to_remove:
             git_rm_path_log(project_path, path_to_remove)
             import pdb;pdb.set_trace()
+        """
 
     """
     refs = ls_ref(project_path)
