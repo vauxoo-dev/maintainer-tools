@@ -144,6 +144,9 @@ def rm_path_ang_log(project_name, org_name, paths_to_remove):
         for path_to_remove in paths_to_remove:
             git_rm_path_log(project_path, path_to_remove)
     print "Later execute: git push --all -u"
+    # Reset a repository:
+    # for branch in `git branch -a | grep remotes | grep -v HEAD | grep -v master`; do     git branch --track ${branch##*/} $branch; done
+    # git push vauxoo-dev --all -u -f
     """
 
 
