@@ -87,6 +87,8 @@ To contribute to this module, please visit http://odoo-community.org.
 import os.path
 import polib
 import argparse
+import re
+
 from config import read_config
 from github3 import login
 from slumber import API, exceptions
@@ -97,6 +99,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     '-p', '--projects', dest='projects', nargs='+',
     default=[], help='List of slugs of Transifex projects to pull')
+parser.add_argument('-o', '--org', dest='organization',
+    default='OCA', help='Name of organization. Default: OCA')
 args = parser.parse_args()
 # Read config
 config = read_config()
@@ -114,6 +118,7 @@ gh_credentials = {'name': gh_user.name,
 tx_url = "https://www.transifex.com/api/2/"
 tx_api = API(tx_url, auth=(tx_username, tx_password))
 
+ORG = args.organization
 
 def _load_po_dict(po_file):
     po_dict = {}
@@ -128,9 +133,13 @@ def _load_po_dict(po_file):
 def process_project(tx_project):
     print "Processing project '%s'..." % tx_project['name']
     tx_slug = tx_project['slug']
-    oca_project = tx_slug[4:tx_slug.rfind('-', 0, len(tx_slug) - 3)]
-    gh_repo = github.repository('OCA', oca_project)
-    gh_branch = gh_repo.branch(tx_slug[-3:].replace('-', '.'))
+    regex = r'(?P<org>%s)\-(?P<repo>[A-Za-z\-\_]+)\-(?P<branch>[A-Za-z0-9.\-\_]+)'%(ORG)
+    match_object = re.search(regex, tx_slug)
+
+    oca_project = match_object.group('repo')
+    gh_repo = github.repository(ORG, oca_project)
+    oca_branch = match_object.group('branch').replace('-', '.')
+    gh_branch = gh_repo.branch(oca_branch)
     tree_data = []
     tree_sha = gh_branch.commit.commit.tree.sha
     resources = tx_api.project(tx_project['slug']).resources().get()
@@ -187,6 +196,7 @@ def process_project(tx_project):
     if tree_data:
         tree = gh_repo.create_tree(tree_data, tree_sha)
         message = 'OCA Transbot updated translations from Transifex'
+        print "message", message
         c = gh_repo.create_commit(
             message=message, tree=tree.sha, parents=[gh_branch.commit.sha],
             author=gh_credentials, committer=gh_credentials)
@@ -198,6 +208,7 @@ def main():
     if args.projects:
         # Check that provided projects are correct
         for project_slug in args.projects:
+            print "project_slug", project_slug
             try:
                 tx_project = tx_api.project(project_slug).get()
                 projects.append(tx_project)
@@ -214,7 +225,7 @@ def main():
             start += len(temp_projects)
             projects += temp_projects
     for project in projects:
-        if 'OCA-' in project['slug']:
+        if ORG + '-' in project['slug']:
             process_project(project)
 
 
