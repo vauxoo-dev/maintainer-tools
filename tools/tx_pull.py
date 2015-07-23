@@ -108,17 +108,18 @@ parser.add_argument(
 args = parser.parse_args()
 # Read config
 config = read_config()
-gh_username = config.get('GitHub', 'username')
 gh_token = config.get('GitHub', 'token')
 tx_username = config.get('Transifex', 'username') or os.environ.get('TRANSIFEX_USER')
 tx_password = config.get('Transifex', 'password') or os.environ.get('TRANSIFEX_PASSWORD')
 tx_num_retries = config.get('Transifex', 'num_retries') or os.environ.get('TRANSIFEX_RETRIES')
-import pdb;pdb.set_trace()
 # Connect to GitHub
 github = github_login.login()
-gh_user = github.user(gh_username)
-gh_credentials = {'name': gh_user.name,
+gh_user = github.user()
+
+gh_credentials = {'name': gh_user.name or str(gh_user),
                   'email': gh_user.email}
+
+print "gh_credentials", gh_credentials
 # Connect to Transifex
 tx_url = "https://www.transifex.com/api/2/"
 tx_api = API(tx_url, auth=(tx_username, tx_password))
@@ -140,7 +141,7 @@ def process_project(tx_project):
     print "Processing project '%s'..." % tx_project['name']
     tx_slug = tx_project['slug']
     regex = r'(?P<org>)' + ORG + \
-        '-(?P<repo>[A-Za-z-_]+)-(?P<branch>[A-Za-z0-9.-_]+)'
+        '\-(?P<repo>[A-Za-z\-\_]+)\-(?P<branch>[A-Za-z0-9.\-\_]+)'
     match_object = re.search(regex, tx_slug)
 
     oca_project = match_object.group('repo')

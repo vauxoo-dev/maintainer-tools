@@ -1,6 +1,6 @@
 # Build a docker image executing:
 #   $ docker build -t tx-bot -f Dockerfile-tx-bot .
-# docker run -it -e GITHUB_TOKEN=### -e ORGANIZATION= -e TRANSIFEX_TEAM= -e TRANSIFEX_USER= -e TRANSIFEX_PASSWORD= tx-bot
+# docker run -it -e GITHUB_USER= -e GITHUB_TOKEN=### -e ORGANIZATION= -e TRANSIFEX_TEAM= -e TRANSIFEX_USER= -e TRANSIFEX_PASSWORD= tx-bot
 #    /bin/sh -c "PYTHONPATH=/root/mt python -m tools.tx_pull -o ${ORGANIZATION}"
 #
 #FROM ubuntu:14.04
