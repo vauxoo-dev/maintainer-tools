@@ -87,6 +87,7 @@ To contribute to this module, please visit http://odoo-community.org.
 
 import argparse
 import os.path
+import os
 import re
 
 import polib
@@ -109,9 +110,10 @@ args = parser.parse_args()
 config = read_config()
 gh_username = config.get('GitHub', 'username')
 gh_token = config.get('GitHub', 'token')
-tx_username = config.get('Transifex', 'username')
-tx_password = config.get('Transifex', 'password')
-tx_num_retries = config.get('Transifex', 'num_retries')
+tx_username = config.get('Transifex', 'username') or os.environ.get('TRANSIFEX_USER')
+tx_password = config.get('Transifex', 'password') or os.environ.get('TRANSIFEX_PASSWORD')
+tx_num_retries = config.get('Transifex', 'num_retries') or os.environ.get('TRANSIFEX_RETRIES')
+import pdb;pdb.set_trace()
 # Connect to GitHub
 github = github_login.login()
 gh_user = github.user(gh_username)
@@ -121,7 +123,7 @@ gh_credentials = {'name': gh_user.name,
 tx_url = "https://www.transifex.com/api/2/"
 tx_api = API(tx_url, auth=(tx_username, tx_password))
 
-ORG = args.organization
+ORG = args.organization or "OCA"
 
 
 def _load_po_dict(po_file):
