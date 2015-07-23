@@ -1,11 +1,11 @@
 # Build a docker image executing:
 #   $ docker build -t tx-bot -f Dockerfile-tx-bot .
-# docker run -it -e GITHUB_TOKEN=### -e ORGANIZATION= -e TRANSIFEX_TEAM= -e TRANSIFEX_USER= -e TRANSIFEX_PASSWORD= tx-bot2 tx-bot
+# docker run -it -e GITHUB_TOKEN=### -e ORGANIZATION= -e TRANSIFEX_TEAM= -e TRANSIFEX_USER= -e TRANSIFEX_PASSWORD= tx-bot
 #    /bin/sh -c "PYTHONPATH=/root/mt python -m tools.tx_pull -o ${ORGANIZATION}"
 #
 #FROM ubuntu:14.04
 FROM tx-bot
-MAINTAINER Moises Lopez <moylop260@vauxoo.com>
+#MAINTAINER Moises Lopez <moylop260@vauxoo.com>
 
 #ENV MT_DIR /root/mt
 ADD ./tools ${MT_DIR}/tools 
