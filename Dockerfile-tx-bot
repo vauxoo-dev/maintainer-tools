@@ -18,4 +18,11 @@ ADD ./requirements.txt ${MT_DIR}/mt_requirements.txt
 #RUN pip install -r ${MT_DIR}/mt_requirements.txt
 
 # ENTRYPOINT ["python -m tools.tx_pull -o ${ORGANIZATION}"]
+RUN touch ${MT_DIR}/tx_pull && chmod +x ${MT_DIR}/tx_pull \ 
+  && echo "#!/bin/sh\n" \
+"if [ -z "\$ORGANIZATION" ]; then python -m tools.tx_pull; else python -m tools.tx_pull -o \${ORGANIZATION}; fi" \ 
+> ${MT_DIR}/tx_pull
 
+CMD ${MT_DIR}/tx_pull
+
+# todo: Add aa cron
