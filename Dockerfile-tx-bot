@@ -1,0 +1,16 @@
+# Build a docker image executing:
+#   $ docker build -t tx-bot -f Dockerfile-tx-bot .
+
+FROM ubuntu:14.04
+
+MAINTAINER Moises Lopez <moylop260@vauxoo.com>
+
+ENV MT_DIR /root/mt
+ADD ./tools ${MT_DIR}/tools 
+ADD ./requirements.txt ${MT_DIR}/mt_requirements.txt
+
+RUN apt-get update
+RUN apt-get install -y build-essential python-dev python-pip \
+    && pip install --upgrade pip
+RUN pip install -r ${MT_DIR}/mt_requirements.txt
+
