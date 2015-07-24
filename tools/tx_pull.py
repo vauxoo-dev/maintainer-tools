@@ -96,22 +96,28 @@ from slumber import API, exceptions
 from . import github_login
 from .config import read_config
 
+TX_USERNAME_DEFAULT = 'transbot@odoo-community.org'
+TX_ORG_DEFAULT = "OCA"
 # Read arguments
 parser = argparse.ArgumentParser(
     description=u'Pull OCA Transifex updated translations to GitHub')
 parser.add_argument(
     '-p', '--projects', dest='projects', nargs='+',
     default=[], help='List of slugs of Transifex projects to pull')
-parser.add_argument(
-    '-o', '--org', dest='organization',
-    default='OCA', help='Name of organization. Default: OCA')
 args = parser.parse_args()
 # Read config
 config = read_config()
 gh_token = config.get('GitHub', 'token')
-tx_username = config.get('Transifex', 'username') or os.environ.get('TRANSIFEX_USER')
-tx_password = config.get('Transifex', 'password') or os.environ.get('TRANSIFEX_PASSWORD')
-tx_num_retries = config.get('Transifex', 'num_retries') or os.environ.get('TRANSIFEX_RETRIES')
+tx_username = config.get('Transifex', 'username') \
+    or os.environ.get('TRANSIFEX_USER') \
+    or TX_USERNAME_DFT
+tx_password = config.get('Transifex', 'password') \
+    or os.environ.get('TRANSIFEX_PASSWORD')
+tx_num_retries = config.get('Transifex', 'num_retries') \
+    or os.environ.get('TRANSIFEX_RETRIES')
+tx_org = config.get('Transifex', 'organization') \
+    or os.environ.get('TRANSIFEX_ORGANIZATION') \
+    or TX_ORG_DEFAULT
 # Connect to GitHub
 github = github_login.login()
 gh_user = github.user()
@@ -123,8 +129,6 @@ print "gh_credentials", gh_credentials
 # Connect to Transifex
 tx_url = "https://www.transifex.com/api/2/"
 tx_api = API(tx_url, auth=(tx_username, tx_password))
-
-ORG = args.organization or "OCA"
 
 
 def _load_po_dict(po_file):
@@ -140,12 +144,12 @@ def _load_po_dict(po_file):
 def process_project(tx_project):
     print "Processing project '%s'..." % tx_project['name']
     tx_slug = tx_project['slug']
-    regex = r'(?P<org>)' + ORG + \
+    regex = r'(?P<org>)' + tx_org + \
         '\-(?P<repo>[A-Za-z\-\_]+)\-(?P<branch>[A-Za-z0-9.\-\_]+)'
     match_object = re.search(regex, tx_slug)
 
     oca_project = match_object.group('repo')
-    gh_repo = github.repository(ORG, oca_project)
+    gh_repo = github.repository(tx_org, oca_project)
     oca_branch = match_object.group('branch').replace('-', '.')
     gh_branch = gh_repo.branch(oca_branch)
     tree_data = []
@@ -208,7 +212,8 @@ def process_project(tx_project):
         commit = gh_repo.create_commit(
             message=message, tree=tree.sha, parents=[gh_branch.commit.sha],
             author=gh_credentials, committer=gh_credentials)
-        gh_repo.ref('heads/{}'.format(gh_branch.name)).update(commit.sha)
+        print "git pushing"
+        ## UNCOMMENT THIS LINE gh_repo.ref('heads/{}'.format(gh_branch.name)).update(commit.sha)
 
 
 def main():
@@ -233,7 +238,7 @@ def main():
             start += len(temp_projects)
             projects += temp_projects
     for project in projects:
-        if ORG + '-' in project['slug']:
+        if tx_org + '-' in project['slug']:
             process_project(project)
 
 

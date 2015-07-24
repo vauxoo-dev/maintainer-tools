@@ -1,28 +1,43 @@
+# Run a tx_pull transifex->github each 12:59 dialy.
 # Build a docker image executing:
 #   $ docker build -t tx-bot -f Dockerfile-tx-bot .
-# docker run -it -e GITHUB_USER= -e GITHUB_TOKEN=### -e ORGANIZATION= -e TRANSIFEX_TEAM= -e TRANSIFEX_USER= -e TRANSIFEX_PASSWORD= tx-bot
-#    /bin/sh -c "PYTHONPATH=/root/mt python -m tools.tx_pull -o ${ORGANIZATION}"
-#
-#FROM ubuntu:14.04
-FROM tx-bot
-#MAINTAINER Moises Lopez <moylop260@vauxoo.com>
+# Create a docker container executing:
+#   $ docker run -it -e GITHUB_TOKEN=### -e TRANSIFEX_USER= -e TRANSIFEX_PASSWORD= -e TRANSIFEX_ORGANIZATION= tx-bot
 
-#ENV MT_DIR /root/mt
+FROM ubuntu:14.04
+MAINTAINER Moises Lopez <moylop260@vauxoo.com>
+
+ENV MT_DIR /root/mt
 ADD ./tools ${MT_DIR}/tools 
 ADD ./requirements.txt ${MT_DIR}/mt_requirements.txt
-#ENV PYTHONPATH ${PYTHONPATH}:${MT_DIR}
+ENV PYTHONPATH ${PYTHONPATH}:${MT_DIR}
 
-#RUN apt-get update
-#RUN apt-get install -y build-essential python-dev python-pip \
-#    && pip install --upgrade pip
-#RUN pip install -r ${MT_DIR}/mt_requirements.txt
+RUN apt-get update
+RUN apt-get install -y build-essential python-dev python-pip \
+    && pip install --upgrade pip
+RUN pip install -r ${MT_DIR}/mt_requirements.txt
 
-# ENTRYPOINT ["python -m tools.tx_pull -o ${ORGANIZATION}"]
-RUN touch ${MT_DIR}/tx_pull && chmod +x ${MT_DIR}/tx_pull \ 
-  && echo "#!/bin/sh\n" \
-"if [ -z "\$ORGANIZATION" ]; then python -m tools.tx_pull; else python -m tools.tx_pull -o \${ORGANIZATION}; fi" \ 
-> ${MT_DIR}/tx_pull
+RUN touch ${MT_DIR}/oca.cfg.tmpl && \
+echo "[GitHub]\n"\
+"username = \n"\
+"token = \${GITHUB_TOKEN}\n"\
+"\n[Transifex]\n"\
+"username = \${TRANSIFEX_USER}\n"\
+"password = \${TRANSIFEX_PASSWORD}\n"\
+"num_retries = 3\n"\
+"organization = \${TRANSIFEX_ORGANIZATION}\n"\
+> ${MT_DIR}/oca.cfg.tmpl
 
-CMD ${MT_DIR}/tx_pull
+WORKDIR ${MT_DIR}
 
-# todo: Add aa cron
+RUN touch ${MT_DIR}/replace_env.sh && \
+echo "#!/bin/sh\n"\
+"perl -p -e 's/\\\$\\{([^}]+)\\}/defined \$ENV{\$1} ? \$ENV{\$1} : \$&/eg; s/\\\$\\{([^}]+)\\}//eg' \${MT_DIR}/oca.cfg.tmpl > \${MT_DIR}/oca.cfg"\
+  > ${MT_DIR}/replace_env.sh && chmod +x ${MT_DIR}/replace_env.sh
+
+RUN touch /var/log/cron.log /var/log/syslog \
+  && echo "59 12 * * * root cd ${MT_DIR}; python -m tools.tx_pull >> /var/log/cron.log 2>&1" \
+  > /etc/cron.d/tx_pull_wo_propagate_environ
+
+CMD ${MT_DIR}/replace_env.sh \
+    && rsyslogd && cron && tail -f /var/log/syslog /var/log/cron.log
