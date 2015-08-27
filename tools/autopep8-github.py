@@ -36,6 +36,7 @@ def create_repo_branches(repobases, repodevs, author):
 
         # Create directories of the repobases.
         git_repo_path = os.path.join("/home/odoo/projects", repo_name)
+        git_repo_path_branch = os.path.join("/home/odoo/projects", repo_name, ".git")
         cmd = ['mkdir', '-p', git_repo_path]
         subprocess.call(cmd)
 #        os.mkdir(repo)
@@ -63,7 +64,8 @@ def create_repo_branches(repobases, repodevs, author):
         subprocess.call(cmd)
 
         # Create branch
-        cmd = ['git', 'checkout', '-b', '8.0-ref-autopep8-' + repo_name + '-' + author, '--track', 'vauxoo/8.0']
+        # Watch out, with this if you include --git-dir the files will be add to your currently folder, not to the especified --git-dir
+        cmd = ['git', '--git-dir=' + git_repo_path_branch, 'checkout', '-b', '8.0-ref-autopep8-' + repo_name + '-' + author, '--track', 'vauxoo/8.0']
         subprocess.call(cmd)
         print cmd
 
