@@ -15,36 +15,49 @@ class Pep8Extended(object):
     def __init__(self, pep8_options, source):
         self.pep8_options = pep8_options
         self.source = source
-
-    def get_checks(self):
-        msgs = {
+        self.msgs = {
             'CW0001': 'Class name with snake_case style found, '
                       'should use CamelCase. Change of "{old_class_name}" '
                       'to "{new_class_name}" next (lines,columns): '
                       '{lines_columns}',
         }
-        return msgs
+
+    def strip_coding_comment(self):
+        '''Remove coding comment if found in first two lines
+        This fix 'SyntaxError: encoding declaration in Unicode string'
+        If the first or second line has the `# xx coding xx` comment,
+            it will be removed.
+        :return: source code without coding comment
+        '''
+        source_strip = list(self.source)
+        line_index = 0
+        for line in source_strip[:2]:
+            if line.strip().startswith('#') \
+                    and "coding" in line:
+                source_strip.pop(line_index)
+            else:
+                line_index += 1
+        return source_strip
 
     def check_cw0001(self):
+        '''Find class with `snake_case` style.
+        Based on `self.source` to get source code.
+        Use autoflak8 dictionary
+            'id': MSG_CODE,
+            'line': LINE_NUMBER,
+            'column': COLUMN_NUMBER,
+            'info': MESSAGE,
+        :return: if snake_case is found return list of autoflake8 dict
+                 with code data else return empty list.
+        '''
         code = 'CW0001'
-        msg = self.get_checks()[code]
+        msg = self.msgs[code]
         class_renamed = {}
         check_result = []
 
-        # Fix 'SyntaxError: encoding declaration in Unicode string'
-        parsed_source = self.source
-        line_deleted = False
-        if len(parsed_source) >= 1 and \
-           ('# -*- coding:' in parsed_source[0] or
-           '# -*- encoding:' in parsed_source[0]):
-            parsed_source = parsed_source[1:]
-            line_deleted = True
-        elif len(parsed_source) >= 2 and \
-            ('# -*- coding:' in parsed_source[1] or
-             '# -*- encoding:' in parsed_source[1]):
-            parsed_source = parsed_source[0:1] + parsed_source[2:]
-            line_deleted = True
-        parsed = ast.parse(''.join(parsed_source))
+        source = self.strip_coding_comment()
+        line_deleted = len(self.source) - len(source)
+        parsed = ast.parse(''.join(source))
 
         renamed_names = []
         for node in ast.walk(parsed):
@@ -54,9 +67,7 @@ class Pep8Extended(object):
                 renamed_names.append(node_renamed)
                 if node_renamed != node.name:
                     class_renamed.setdefault(
-                        node.name, {'line_col': []})
-                    class_renamed[node.name]['renamed'] = \
-                        node_renamed
+                        node.name, {'line_col': [], 'renamed': node_renamed})
                     class_renamed[node.name]['line_col'].append((
                         node.lineno + line_deleted,
                         node.col_offset + 1))
@@ -94,9 +105,14 @@ class Pep8Extended(object):
         return check_result
 
     def _execute_pep8_extendend(self):
-        checks = self.get_checks()
+        '''Wrapper method to run check method based on check name.
+        This method will call to methods:
+            check_CHECK_NAME(self)
+        :return: List extended with methods result.
+        '''
         checks_results = []
-        for check in checks:
+        for check in self.msgs:
+            # Validate if error is enabled.
             if check not in self.pep8_options['ignore'] \
                and (not self.pep8_options['select']
                or check in self.pep8_options['select']):
