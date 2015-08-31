@@ -1,11 +1,11 @@
 
 import os
 import tempfile
-import unittest2
+import unittest
 from tools import autopep8_extended
 
 
-class TestAutopep8Extended(unittest2.TestCase):
+class TestAutopep8Extended(unittest.TestCase):
     def setUp(self):
         self.directory_name = tempfile.mkdtemp()
 
@@ -99,4 +99,4 @@ class HelloWorld():
 
 
 if __name__ == '__main__':
-    unittest2.main()
+    unittest.main()
