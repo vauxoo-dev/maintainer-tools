@@ -63,11 +63,30 @@ def create_repo_branches(repobases, repodevs, author):
         cmd = ['git', 'branch', '-a']
         subprocess.call(cmd)
 
+        # Changing folder
+#        cmd = ['cd', git_repo_path]
+#        subprocess.call(cmd)
+
         # Create branch
-        # Watch out, with this if you include --git-dir the files will be add to your currently folder, not to the especified --git-dir
-        cmd = ['git', '--git-dir=' + git_repo_path_branch, 'checkout', '-b', '8.0-ref-autopep8-' + repo_name + '-' + author, '--track', 'vauxoo/8.0']
+        # Watch out with this, if you include --git-dir the files will be add to your currently folder, not to the especified --git-dir
+        cmd = ['git', '--git-dir=' + git_repo_path_branch, 'checkout', '-b', '8.0-ref-autopep8-' + repo_name + '-' + author.lower(), '--track', 'vauxoo/8.0']
         subprocess.call(cmd)
         print cmd
+
+        # Modify with oca-autopep8
+        cmd = ['oca-autopep8', '-ri', git_repo_path]
+        subprocess.call(cmd)
+
+        # Checking changes in repo
+        cmd = ['git', 'diff']
+        subprocess.call(cmd)
+        
+        # Make a commit
+        cmd = ['git', 'commit', '--author', author, '-am', "'[REF] " + repo_name + ": Adding autopep8 in modules'"]
+        subprocess.call(cmd)
+        print cmd
+
+        # Git push
 
 
 def main():
