@@ -87,7 +87,9 @@ def create_repo_branches(repobases, repodevs, author):
         print cmd
 
         # Git push
-
+        cmd = ['git', 'push', org_dev, '8.0-ref-autopep8-' + repo_name + '-' + author.lower()]
+        subprocess.call(cmd)
+        print cmd
 
 def main():
     '''
@@ -112,6 +114,7 @@ def main():
     parser.add_argument("author",
                         help="Name from the autor. Username from Github.",
                         type=str)
+
 
     args = parser.parse_args()
 
