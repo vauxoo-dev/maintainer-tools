@@ -9,24 +9,25 @@ to Github projects.
 import argparse
 import github3
 import subprocess
-import sys
-
 import os
 
-
+org = "Vauxoo"
 org_prod = "vauxoo"
 org_dev = "vauxoo-dev"
 branch_list = []
 series = ['8.0']
 
-# Creating directories and branches.
 
-def create_repo_branches(repobases, repodevs, author):
+
+# Creating directories and branches.
+def create_repo_branches(repobases, repodevs, author, pull_request=False):
     '''
     Method to create remote base repos
     and remote developer repos.
     '''
     cont = 0
+    pull_request = pull_request
+
     for repo in repobases:
         # Split the ssh repobase to the name of the repo.
         # e.g. 'git@github.com:vauxoo-dev/maintainer-tools.git' to 'maintainer-tools'
@@ -91,6 +92,12 @@ def create_repo_branches(repobases, repodevs, author):
         subprocess.call(cmd)
         print cmd
 
+        # Creating pull request
+        if pull_request:
+            cmd = ['hub', 'pull-request', '-o', '-b', org + '/' + repo_name + ':' + series[0], '-h', org_dev + ':' + '8.0-ref-autopep8-' + repo_name + '-' + author.lower()]
+            print cmd
+            subprocess.call(cmd)
+
 def main():
     '''
     Method main to get args and call other methods.
@@ -115,7 +122,15 @@ def main():
                         help="Name from the autor. Username from Github.",
                         type=str)
 
+    parser.add_argument("--pullrequest",
+                        dest="pull_request",
+                        action='store_true')
 
+    parser.add_argument("--no-pullrequest",
+                        dest="pull_request",
+                        action='store_false')
+
+    parser.set_defaults(pull_request=False)
     args = parser.parse_args()
 
     # Split the string into a list.    
@@ -123,7 +138,7 @@ def main():
     print "remote_base_list", remote_base_list
     remote_dev_list = args.remotedev.split(',')
     print "remote_dev_list", remote_dev_list
-    res = create_repo_branches(remote_base_list, remote_dev_list, args.author)
+    res = create_repo_branches(remote_base_list, remote_dev_list, args.author, args.pull_request)
 
 if __name__ == '__main__':
     main()
