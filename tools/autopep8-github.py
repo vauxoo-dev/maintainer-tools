@@ -13,6 +13,8 @@ Requirements
         - $ cd maintainers-tools
         - $ python setup.py install
 
+    See more info: https://github.com/Vauxoo/maintainer-tools
+
     Brew previously installed (homebrew or linuxbrew):
         - Linuxbrew
             - Install dependencies:
@@ -28,6 +30,8 @@ Requirements
             Note: Please check you are installing in one of your specific PATH.
                   Use $ env to check your PATHs.
 
+    See more info: http://brew.sh/linuxbrew/
+
      Install hub
         - $ brew install hub
 
@@ -38,10 +42,16 @@ Requirements
 
             Note: You can add to .profile file if you don't have your .bash_profile
 
+    See more info: https://github.com/github/hub or https://hub.github.com/
+
 
 How to use
+
+        Execute the script file in your currently project folder:
         e. g.
-        ./autopep8-github.py git@github.com:Vauxoo/demo-gitflow.git git@github.com:vauxoo-dev/demo-gitflow.git KarenKawaii --pullrequest
+        $ mkdir -p /home/odoo/projects/demo-gitflow
+        $ cd /home/odoo/projects/demo-gitflow
+        $ ./autopep8-github.py git@github.com:Vauxoo/demo-gitflow.git git@github.com:vauxoo-dev/demo-gitflow.git KarenKawaii --pullrequest
 
 usage: autopep8-github.py [-h] [--pullrequest] [--no-pullrequest]
                           remotebase remotedev author
