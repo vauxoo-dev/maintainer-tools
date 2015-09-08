@@ -2,9 +2,68 @@
 # -*- coding: utf-8 -*-
 
 '''
-Script to add autopep8 and CamelizeClass
-to Github projects.
+Script to add autopep8, CamelizeClass and automate
+git commands like create branches, commit, push and
+do pull request to Github projects.
+
+Requirements
+
+    Oca-autopep8
+        - $ git clone git@github.com:OCA/maintainers-tools.git
+        - $ cd maintainers-tools
+        - $ python setup.py install
+
+    Brew previously installed (homebrew or linuxbrew):
+        - Linuxbrew
+            - Install dependencies:
+                - $ sudo apt-get install build-essential curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev
+            - Install:
+                - $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+
+        - Add to your .bashrc or .zshrc:
+            export PATH="$HOME/.linuxbrew/bin:$PATH"
+            export MANPATH="$HOME/.linuxbrew/share/man:$MANPATH"
+            export INFOPATH="$HOME/.linuxbrew/share/info:$INFOPATH"
+
+            Note: Please check you are installing in one of your specific PATH.
+                  Use $ env to check your PATHs.
+
+     Install hub
+        - $ brew install hub
+
+        - Aliasing (if you want):
+            Place this command in your .bash_profile or other startup script:
+                - $ vim ~/.bash_profile
+                eval "$(hub alias -s)"
+
+            Note: You can add to .profile file if you don't have your .bash_profile
+
+
+How to use
+        e. g.
+        ./autopep8-github.py git@github.com:Vauxoo/demo-gitflow.git git@github.com:vauxoo-dev/demo-gitflow.git KarenKawaii --pullrequest
+
+usage: autopep8-github.py [-h] [--pullrequest] [--no-pullrequest]
+                          remotebase remotedev author
+
+positional arguments:
+  remotebase        The names of the git remote base to use. Use remote bases
+                    names comma separated without spaces e.g.
+                    'git@github.com:Vauxoo/maintainer-tools.git,
+                    git@github.com:Vauxoo/demo-gitflow.git'
+  remotedev         The names of the git developer remote to use. Use dev
+                    remote names comma separated without spaces. e.g.
+                    'git@github.com:vauxoo-dev/maintainer-tools.
+                    git,git@github.com:vauxoo-dev/demo-gitflow.git'
+  author            Name from the author. Username from Github.
+
+optional arguments:
+  -h, --help        show this help message and exit
+  --pullrequest     Enable pull request.
+  --no-pullrequest  Disable pull request.
+
 '''
+
 
 import argparse
 import subprocess
@@ -135,16 +194,18 @@ def main():
                         type=str)
 
     parser.add_argument("author",
-                        help="Name from the autor. Username from Github.",
+                        help="Name from the author. Username from Github.",
                         type=str)
 
     parser.add_argument("--pullrequest",
                         dest="pull_request",
-                        action='store_true')
+                        action='store_true',
+                        help="Enable pull request.")
 
     parser.add_argument("--no-pullrequest",
                         dest="pull_request",
-                        action='store_false')
+                        action='store_false',
+                        help="Disable pull request.")
 
     parser.set_defaults(pull_request=False)
     args = parser.parse_args()
