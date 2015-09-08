@@ -18,16 +18,18 @@ Requirements
     Brew previously installed (homebrew or linuxbrew):
         - Linuxbrew
             - Install dependencies:
-                - $ sudo apt-get install build-essential curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev
+                - $ sudo apt-get install build-essential curl git m4 ruby
+                    texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev
+                    libncurses-dev zlib1g-dev
             - Install:
-                - $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
-
+                - $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)" '''  # noqa
+'''
         - Add to your .bashrc or .zshrc:
             export PATH="$HOME/.linuxbrew/bin:$PATH"
             export MANPATH="$HOME/.linuxbrew/share/man:$MANPATH"
             export INFOPATH="$HOME/.linuxbrew/share/info:$INFOPATH"
 
-            Note: Please check you are installing in one of your specific PATH.
+            Note: Check you are installing in one of your specific PATH.
                   Use $ env to check your PATHs.
 
     See more info: http://brew.sh/linuxbrew/
@@ -36,11 +38,11 @@ Requirements
         - $ brew install hub
 
         - Aliasing (if you want):
-            Place this command in your .bash_profile or other startup script:
+            Place this command in your .bash_profile:
                 - $ vim ~/.bash_profile
                 eval "$(hub alias -s)"
 
-            Note: You can add to .profile file if you don't have your .bash_profile
+            Note: You can also add to .profile file.
 
     See more info: https://github.com/github/hub or https://hub.github.com/
 
@@ -51,8 +53,8 @@ How to use
         e. g.
         $ mkdir -p /home/odoo/projects/demo-gitflow
         $ cd /home/odoo/projects/demo-gitflow
-        $ ./autopep8-github.py git@github.com:Vauxoo/demo-gitflow.git git@github.com:vauxoo-dev/demo-gitflow.git KarenKawaii --pullrequest
-
+        $ ./autopep8-github.py git@github.com:Vauxoo/demo-gitflow.git git@github.com:vauxoo-dev/demo-gitflow.git KarenKawaii --pullrequest '''  # noqa
+'''
 usage: autopep8-github.py [-h] [--pullrequest] [--no-pullrequest]
                           remotebase remotedev author
 
