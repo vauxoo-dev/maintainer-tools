@@ -23,8 +23,8 @@ def create_repo_branches(repobases,
                          author,
                          pull_request=False):
     '''
-    Method to create remote base repos
-    and remote developer repos.
+    Method to create remote base repos and remote developer remotes,
+    fix autopep8 and do pull request.
     '''
     cont = 0
     pull_request = pull_request
@@ -77,7 +77,7 @@ def create_repo_branches(repobases,
         # not to the specific --git-dir
         # Please use it inside of the folder you want to pull
         cmd = ['git', '--git-dir=' + git_repo_path_branch, 'checkout',
-               '-b', '8.0-ref-autopep8-' + repo_name + '-' +
+               '-b', '8.0-ref-autopep8-' + repo_name + '-dev-' +
                author.lower(), '--track', 'vauxoo/8.0']
         subprocess.call(cmd)
         print cmd
@@ -98,7 +98,7 @@ def create_repo_branches(repobases,
 
         # Git push
         cmd = ['git', 'push', org_dev,
-               '8.0-ref-autopep8-' + repo_name + '-' + author.lower()]
+               '8.0-ref-autopep8-' + repo_name + '-dev-' + author.lower()]
         subprocess.call(cmd)
         print cmd
 
@@ -106,7 +106,7 @@ def create_repo_branches(repobases,
         if pull_request:
             cmd = ['hub', 'pull-request', '-o', '-b', org + '/' + repo_name +
                    ':' + series[0], '-h', org_dev + ':' + '8.0-ref-autopep8-'
-                   + repo_name + '-' + author.lower()]
+                   + repo_name + '-dev-' + author.lower()]
             print cmd
             subprocess.call(cmd)
 
