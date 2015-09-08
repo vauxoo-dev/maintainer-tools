@@ -106,7 +106,7 @@ def create_repo_branches(repobases,
         # to 'maintainer-tools'
         repo.strip('/.')
         repo_name = repo[22:-4]
-        print repo_name
+        # print repo_name
 
         # Create directories of the repobases.
         git_repo_path = os.path.join("/home/odoo/projects", repo_name)
@@ -124,19 +124,19 @@ def create_repo_branches(repobases,
         cmd = ['git', '--git-dir=' + os.path.join(git_repo_path, '.git'),
                'remote', 'add', org_prod, repo]
         subprocess.call(cmd)
-        print cmd
+        # print cmd
 
         cmd = ['git', '--git-dir=' + os.path.join(git_repo_path, '.git'),
                'remote', 'add', org_dev, repodevs[cont]]
         subprocess.call(cmd)
-        print cmd
+        # print cmd
         cont = cont + 1
 
         # Bringing all changes from the remote repo
         cmd = ['git', '--git-dir=' + os.path.join(git_repo_path, '.git'),
                'fetch', '--all']
         subprocess.call(cmd)
-        print cmd
+        # print cmd
 
         cmd = ['git', 'branch', '-a']
         subprocess.call(cmd)
@@ -151,7 +151,7 @@ def create_repo_branches(repobases,
                '-b', '8.0-ref-autopep8-' + repo_name + '-dev-' +
                author.lower(), '--track', 'vauxoo/8.0']
         subprocess.call(cmd)
-        print cmd
+        # print cmd
 
         # Modify with oca-autopep8
         cmd = ['oca-autopep8', '-ri', git_repo_path]
@@ -165,20 +165,20 @@ def create_repo_branches(repobases,
         cmd = ['git', 'commit', '--author', author, '-am',
                "'[REF] " + repo_name + ": Adding autopep8 in modules'"]
         subprocess.call(cmd)
-        print cmd
+        # print cmd
 
         # Git push
         cmd = ['git', 'push', org_dev,
                '8.0-ref-autopep8-' + repo_name + '-dev-' + author.lower()]
         subprocess.call(cmd)
-        print cmd
+        # print cmd
 
         # Creating pull request
         if pull_request:
             cmd = ['hub', 'pull-request', '-o', '-b', org + '/' + repo_name +
                    ':' + series[0], '-h', org_dev + ':' + '8.0-ref-autopep8-'
                    + repo_name + '-dev-' + author.lower()]
-            print cmd
+            # print cmd
             subprocess.call(cmd)
 
 
@@ -224,9 +224,9 @@ def main():
 
     # Split the string into a list.
     remote_base_list = args.remotebase.split(',')
-    print "remote_base_list", remote_base_list
+    # print "remote_base_list", remote_base_list
     remote_dev_list = args.remotedev.split(',')
-    print "remote_dev_list", remote_dev_list
+    # print "remote_dev_list", remote_dev_list
     create_repo_branches(remote_base_list,
                          remote_dev_list,
                          args.author,
