@@ -97,6 +97,36 @@ class HelloWorld():
         content_expected = content
         self.run_test(msgs, content, content_expected)
 
+    def test_coding_comment(self):
+        'Test replace coding comment'
+        msgs = ["CW0003"]
+        content_expected = "# coding: utf-8\nhello = 'world'\n"
+
+        # coding first line
+        content = "# -*- coding: utf-8 -*-\nhello = 'world'\n"
+        self.run_test(msgs, content, content_expected)
+
+        # coding second line
+        content = "\n# -*- coding: utf-8 -*-\nhello = 'world'\n"
+        self.run_test(msgs, content, '\n' + content_expected)
+
+        # encoding first line
+        content = "# -*- encoding: utf-8 -*-\nhello = 'world'\n"
+        self.run_test(msgs, content, content_expected)
+
+        # encoding second line
+        content = "\n# -*- encoding: utf-8 -*-\nhello = 'world'\n"
+        self.run_test(msgs, content, '\n' + content_expected)
+
+        # Normal coding
+        content = "# coding: utf-8\nhello = 'world'\n"
+        self.run_test(msgs, content, content_expected)
+
+        # anormal coding: third line
+        content = "#\n\n\n# -*- encoding: utf-8 -*-\nhello = 'world'\n"
+        content_expected = content
+        self.run_test(msgs, content, content_expected)
+
 
 if __name__ == '__main__':
     unittest.main()
