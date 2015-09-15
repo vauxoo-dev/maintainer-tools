@@ -15,7 +15,33 @@ section.
 * Use of the singular form in module name (or use "multi"),
   except when compound of module name or object Odoo
   that is already in the plural (i.e. mrp_operations_....).
-* Use the [description template](https://github.com/OCA/maintainer-tools/tree/master/template/module)
+* Use the [description template](https://github.com/OCA/maintainer-tools/tree/master/template/module) but remove sections with no meaningful content.
+* In the `__openerp__.py`  manifest file:
+  * Avoid empty keys
+  * Make sure it has the `license` key
+  * Make sure the text `,Odoo Community Association (OCA)` is appended
+    to the `author` text.
+
+### Version numbers
+
+The version number in the module manifest should be the Odoo major
+version (e.g. `8.0`) followed by the module `x.y.z` version numbers.
+For example: `8.0.1.0.0` is expected for the first release of an 8.0
+module.
+
+The `x.y.z` version numbers follow the semantics `breaking.feature.fix`:
+
+  * `x` increments when the data model or the views had significant
+    changes. Data migration might be needed, or depending modules might
+    be affected.
+  * `y` increments when non-breaking new features are added. A module
+    upgrade will probably be needed.
+  * `z` increments when bugfixes were made. Usually a server restart
+    is needed for the fixes to be made available.
+
+If applicable, breaking changes are expected to include instructions
+or scripts to perform migration on current installations.
+
 
 ### Directories
 
@@ -128,6 +154,8 @@ When declaring a record in XML,
   action/menu/views, the convention may not be applicable.
 * Use naming convention defined at the next point
 * The tag `<data>` is only used to set not-updatable data with `noupdate=1`
+* Do not prefix the xmlid by the current module's name (`<record id="view_id"...`, not `<record id="current_module.view_id"...`)
+
 
 ```xml
 <record id="view_id" model="ir.ui.view">
@@ -142,6 +170,20 @@ When declaring a record in XML,
     </field>
 </record>
 ```
+
+### Records
+
+* For records of model `ir.filters` use explicit `user_id` field.
+
+```xml
+<record id="filter_id" model="ir.filters">
+    <field name="name">Filter name</field>
+    <field name="model_id">filter.model</field>
+    <field name="user_id" eval="False"/>
+</record>
+```
+
+More info [here](https://github.com/odoo/odoo/pull/8218)
 
 ### Naming xml_id
 
@@ -219,6 +261,52 @@ name.
 </record>
 ```
 
+### External dependencies
+
+#### `__openerp__.py`
+If your module use extras dependencies of python or binaries you should add to `__openerp__py` file the section `external_dependencies`.
+
+```python
+{
+    'name': 'Example Module',
+    ...
+    'external_dependencies': {
+        'bin': [
+            'external_dependency_binary_1',
+            'external_dependency_binary_2',
+            ...
+            'external_dependency_binary_N',
+        ],
+        'python': [
+            'external_dependency_python_1',
+            'external_dependency_python_2',
+            ...
+            'external_dependency_python_N',
+        ],
+    },
+    ...
+    'installable': True,
+}
+```
+
+An entry in `bin` needs to be in `PATH` identify with `which external_dependency_binary_N` command.
+
+An entry in `python` needs to be in `PYTHONPATH` identify with `python -c "import external_dependency_python_N"` command.
+
+#### ImportError
+In python files where you use a `import external_dependency_python_N` you will need to add a `try-except` with a debug log.
+
+```python
+try:
+  import external_dependency_python_N
+except ImportError:
+  _logger.debug('Can not `import external_dependency_python_N`.')
+```
+
+#### README
+If your module use extras dependencies of python or binaries, please explain how to install them in the `README.rst` file in the section `Installation`.
+
+
 ## Python
 
 ### PEP8 options
@@ -234,28 +322,44 @@ a few exceptions:
 
 The imports are ordered as
 
-1. Externals libs (One per line sorted and splitted in python stdlib)
-2. Imports of `openerp`
-3. Imports from Odoo modules (rarely, and only if necessary)
-4. Local imports in the relative form
+1. Standard library imports
+2. Known third party imports (One per line sorted and splitted in python stdlib)
+3. Odoo imports (`openerp`)
+4. Imports from Odoo modules (rarely, and only if necessary)
+5. Local imports in the relative form
+6. Unknown third party imports (One per line sorted and splitted in python stdlib)
 
-Inside these 4 groups, the imported lines are alphabetically sorted.
+Inside these 6 groups, the imported lines are alphabetically sorted.
 
 ```python
 # 1: imports of python lib
 import base64
+import logging
 import re
 import time
-# 2:  imports of openerp
+
+# 2: import of known third party lib
+import lxml
+
+# 3:  imports of openerp
 import openerp
 from openerp import api, fields, models  # alphabetically ordered
-from openerp.tools.safe_eval import safe_eval as eval
+from openerp.tools.safe_eval import safe_eval
 from openerp.tools.translate import _
-# 3:  imports from odoo modules
+
+# 4:  imports from odoo modules
 from openerp.addons.website.models.website import slug
 from openerp.addons.web.controllers.main import login_redirect
-# 4: local imports
+
+# 5: local imports
 from . import utils
+
+# 6: Import of unknown third party lib
+_logger = logging.getLogger(__name__)
+try:
+  import external_dependency_python_N
+except ImportError:
+  _logger.debug('Can not `import external_dependency_python_N`.')
 ```
 
  * Note:
@@ -349,6 +453,9 @@ class...
   (example: sale_order_line_ids)
 * `Many2One` fields should have `_id` as suffix
   (example: partner_id, user_id, ...)
+* If the technical name of the field (the variable name) is the same to the string of the label, don't put `string` parameter for new API fields, because it's automatically taken. If your variable name contains "_" in the name, they are converted to spaces when creating the automatic string and each word is capitalized.
+  (example: old api `'name': fields.char('Name', ...)`
+            new api `'name': fields.Char(...)`)
 * Method conventions
     * Compute Field: the compute method pattern is `_compute_<field_name>`
     * Search method: the search method pattern is `_search_<field_name>`
@@ -612,6 +719,10 @@ The differences include:
     * Using one file per model
     * Separating data and demo data xml folders
     * Not changing xml_ids while inheriting
+    * Add guideline to use external dependencies
+* [XML](#xml-files)
+    * Avoid use current module in xml_id
+    * Use explicit `user_id` field for records of model `ir.filters`
 * [Python](#python)
     * Fuller PEP8 compliance
     * Using relative import for local files
@@ -620,8 +731,9 @@ The differences include:
     * Hints on documentation
     * Don't use CamelCase for model variable
     * Use underscore uppercase notation for global variables or constants
-* [Fields](#fields)
+* [Field](#field)
     * A hint for function defaults
+    * Use default label string if is posible.
 * [Tests Section Added](#tests)
 * [Git](#git)
     * No prefixing of commits
