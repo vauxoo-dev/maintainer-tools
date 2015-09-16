@@ -25,6 +25,7 @@ class Pep8Extended(object):
                       '{lines_columns}',
             'CW0003': 'Coding comment no standard, should use ' +
                       CODING_COMMENT,
+            'CW0004': 'Missed coding comment',
         }
         self.coding_comment = None
 
@@ -112,20 +113,33 @@ class Pep8Extended(object):
 
     def check_cw0003(self):
         'Detect coding comment no standard'
-        msg_code = 'CW0003'
-        msg = self.msgs[msg_code]
-        check_result = []
         self.strip_coding_comment()
         if self.coding_comment is not None:
+            msg_code = 'CW0003'
+            msg = self.msgs[msg_code]
             line = self.source.index(self.coding_comment) + 1
             column = 0
-            check_result.append({
+            return [{
                 'id': msg_code,
                 'line': line,
                 'column': column,
                 'info': msg,
-            })
-        return check_result
+            }]
+
+    def check_cw0004(self):
+        'Detect missed coding comment'
+        self.strip_coding_comment()
+        if self.coding_comment is None:
+            msg_code = 'CW0004'
+            msg = self.msgs[msg_code]
+            line = 1
+            column = 0
+            return [{
+                'id': msg_code,
+                'line': line,
+                'column': column,
+                'info': msg,
+            }]
 
     def _execute_pep8_extendend(self):
         '''Wrapper method to run check method based on check name.
@@ -143,7 +157,8 @@ class Pep8Extended(object):
                 if hasattr(self, check_methodname):
                     check_method = getattr(self, check_methodname)
                     check_results = check_method()
-                    checks_results.extend(check_results)
+                    if check_results and self.source:
+                        checks_results.extend(check_results)
         return checks_results
 
 
@@ -232,8 +247,21 @@ class FixPEP8(autopep8.FixPEP8):
         """
         line = result['line']
         self.source[line - 1] = CODING_COMMENT + '\n'
-        lines_modified = [line]
-        return lines_modified
+        return [line]
+
+    def fix_cw0004(self, result):
+        """Add new coding comment to `CODING_COMMENT` global variable
+        :param result: Dict with next values
+            {
+            'id': code,
+            'line': line_number,
+            'column': column_number,
+            'info': msg,
+            }
+        :return: Return list of integers with value of # line modified
+        """
+        self.source.insert(0, CODING_COMMENT + '\n')
+        return [result['line']]
 
 
 autopep8.FixPEP8 = FixPEP8

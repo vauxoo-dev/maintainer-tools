@@ -14,7 +14,10 @@ class TestAutopep8Extended(unittest.TestCase):
         :param fname: String file name of file to check.
         :param msgs: List of msgs to check.
         """
-        cmd = ["autopep8_extended.py", "-i", "--select", ] + msgs + [fname]
+        cmd = [
+            "autopep8_extended.py", "-i",
+            "--select=" + ','.join(msgs)
+        ] + [fname]
         autopep8_extended.autopep8.main(cmd)
 
     def run_test(self, msgs, content, content_expected):
@@ -99,7 +102,7 @@ class HelloWorld():
 
     def test_coding_comment(self):
         'Test replace coding comment'
-        msgs = ["CW0003"]
+        msgs = ["CW0003", "CW0004"]
         content_expected = "# coding: utf-8\nhello = 'world'\n"
 
         # coding first line
@@ -122,10 +125,20 @@ class HelloWorld():
         content = "# coding: utf-8\nhello = 'world'\n"
         self.run_test(msgs, content, content_expected)
 
+        # coding missed
+        content = "hello = 'world'\n"
+        self.run_test(msgs, content, content_expected)
+
         # anormal coding: third line
         content = "#\n\n\n# -*- encoding: utf-8 -*-\nhello = 'world'\n"
-        content_expected = content
+        content_expected = "# coding: utf-8\n" + content
         self.run_test(msgs, content, content_expected)
+
+        # empty file
+        self.run_test(msgs, "", "")
+
+        # one empty line
+        self.run_test(msgs, "\n", "# coding: utf-8\n\n")
 
 
 if __name__ == '__main__':
