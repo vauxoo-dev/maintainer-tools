@@ -148,7 +148,7 @@ def create_repo_branches(repobases,
         # not to the specific --git-dir
         # Please use it inside of the folder you want to pull
         cmd = ['git', '--git-dir=' + git_repo_path_branch, 'checkout',
-               '-b', '8.0-ref-autopep8-' + repo_name + '-dev-' +
+               '-b', '8.0-standardize-' + repo_name + '-pr1-dev-' +
                author.lower(), '--track', 'vauxoo/8.0']
         subprocess.call(cmd)
         # print cmd
@@ -157,27 +157,41 @@ def create_repo_branches(repobases,
         cmd = ['oca-autopep8', '-ri', git_repo_path]
         subprocess.call(cmd)
 
+        # Modify wih oca-autopep8, delete vim comment,
+        # Change coding comment and insert missing comment.
+        cmd = ['oca-autopep8', '-ri', '--select=CW0002,W391,CW0003,CW0004',
+                git_repo_path]
+        subprocess.call(cmd)
+
+        # Remove magic comment interpreter
+        cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'sed', '-i', "'/#!\/usr\/bin\/python/d'", '{}', '\;']
+        subprocess.call(cmd)
+
+        # Remove execute permissions
+        cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'chmod', '-x', '{}', '\;']
+        subprocess.call(cmd)
+
         # Checking changes in repo
         cmd = ['git', 'diff']
         subprocess.call(cmd)
 
         # Make a commit
         cmd = ['git', 'commit', '--author', author, '-am',
-               "'[REF] " + repo_name + ": Adding autopep8 in modules'"]
+               "'[REF] " + repo_name + ": Standardize project with odoo guidelines.'"]
         subprocess.call(cmd)
         # print cmd
 
         # Git push
         cmd = ['git', 'push', org_dev,
-               '8.0-ref-autopep8-' + repo_name + '-dev-' + author.lower()]
+               '8.0-standardize-' + repo_name + '-pr1-dev-' + author.lower()]
         subprocess.call(cmd)
         # print cmd
 
         # Creating pull request
         if pull_request:
             cmd = ['hub', 'pull-request', '-o', '-b', org + '/' + repo_name +
-                   ':' + series[0], '-h', org_dev + ':' + '8.0-ref-autopep8-'
-                   + repo_name + '-dev-' + author.lower()]
+                   ':' + series[0], '-h', org_dev + ':' + '8.0-standardize-'
+                   + repo_name + '-pr1-dev-' + author.lower()]
             # print cmd
             subprocess.call(cmd)
 
