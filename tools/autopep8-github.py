@@ -153,23 +153,40 @@ def create_repo_branches(repobases,
         subprocess.call(cmd)
         # print cmd
 
-        # Creating
+        # README.rst
 
         # Add missing README.md from description in the __openerp__.py file
-        cmd = ['python', 'DescriptionToReadmeMD.py', '-p', git_repo_path]
-        subprocess.call(cmd)
+        # If README.rst exists, skip this command.
+        files = os.listdir(git_repo_path)
+        print files
+        for element in files:
+            if os.path.isdir(element) and element != '__unported__':
+                if os.path.exists(os.path.join(git_repo_path, element, 'README.rst')):
+                    print "It doesn't need to add README.md file"
+                else:
+                    cmd = ['python', 'DescriptionToReadmeMD.py', '-p', os.path.join(git_repo_path, element)]
+                    subprocess.call(cmd)
 
-        # Git command to add new README.md files
-        cmd = ['git', 'add', '/README.md']
-        subprocess.call(cmd)
+        # Listing README.md files in the current project folder.
+        files = os.listdir(git_repo_path)
+        print files
+        for element in files:
+            if os.path.isdir(element) and element != '__unported__':
+                # Git command to add new README.md files
+                cmd = ['git', 'add', os.path.join(git_repo_path, element, 'README.md')]
+                print cmd
+                subprocess.call(cmd)
+                # Convert README.md files to README.rst files
+                cmd = ['python', 'md2rst.py', '-p', element]
+                subprocess.call(cmd)
 
         # Checking git status to check if the README.md files are added.
         cmd = ['git', 'status']
         subprocess.call(cmd)
 
         # Convert README.md files to README.rst files
-        cmd = ['python', 'md2rst.py', '-p', git_repo_path]
-        subprocess.call(cmd)
+        # cmd = ['python', 'md2rst.py', '-p', git_repo_path]
+        # subprocess.call(cmd)
 
         # Modify with oca-autopep8
         cmd = ['oca-autopep8', '-ri', git_repo_path]
