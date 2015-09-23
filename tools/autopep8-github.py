@@ -224,8 +224,16 @@ def create_repo_branches(repobases,
         cmd = ['git', 'diff']
         subprocess.call(cmd)
 
+        # Ignore __unported__ folder to commit
+        cmd = ['git', 'checkout', '--', '__unported__/']
+        subprocess.call(cmd)
+
+        # Checking files before commit
+        cmd = ['git', 'status']
+        subprocess.call(cmd)
+
         # Make a commit
-        '''cmd = ['git', 'commit', '--author', author, '-am',
+        cmd = ['git', 'commit', '--author', author, '-am',
                "'[REF] " + repo_name + ": Standardize project with odoo guidelines.'"]
         subprocess.call(cmd)
         # print cmd
@@ -234,7 +242,7 @@ def create_repo_branches(repobases,
         cmd = ['git', 'push', org_dev,
                '8.0-standardize-' + repo_name + '-pr1-dev-' + author.lower()]
         subprocess.call(cmd)
-        # print cmd'''
+        # print cmd
 
         # Creating pull request
         if pull_request:
