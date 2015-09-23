@@ -153,6 +153,24 @@ def create_repo_branches(repobases,
         subprocess.call(cmd)
         # print cmd
 
+        # Creating
+
+        # Add missing README.md from description in the __openerp__.py file
+        cmd = ['python', 'DescriptionToReadmeMD.py', '-p', git_repo_path]
+        subprocess.call(cmd)
+
+        # Git command to add new README.md files
+        cmd = ['git', 'add', '/README.md']
+        subprocess.call(cmd)
+
+        # Checking git status to check if the README.md files are added.
+        cmd = ['git', 'status']
+        subprocess.call(cmd)
+
+        # Convert README.md files to README.rst files
+        cmd = ['python', 'md2rst.py', '-p', git_repo_path]
+        subprocess.call(cmd)
+
         # Modify with oca-autopep8
         cmd = ['oca-autopep8', '-ri', git_repo_path]
         subprocess.call(cmd)
@@ -164,19 +182,33 @@ def create_repo_branches(repobases,
         subprocess.call(cmd)
 
         # Remove magic comment interpreter
-        cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'sed', '-i', "'/#!\/usr\/bin\/python/d'", '{}', '\;']
-        subprocess.call(cmd)
+        # cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'sed', '-i', '/#!\/usr\/bin\/python/d', '{}', '\;']
+        # rm_magic_comment = "find . -type f -name '*.py' -exec sed -i '/#!\/usr\/bin\/python/d' {} \;"
+        # cmd = [rm_magic_comment]
+        # subprocess.call(cmd)
+        os.system("find . -type f -name '*.py' -exec sed -i '/#!\/usr\/bin\/python/d' {} \;")
 
         # Remove execute permissions
-        cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'chmod', '-x', '{}', '\;']
-        subprocess.call(cmd)
+        # cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'chmod', '-x', '{}', '\;']
+        # subprocess.call(cmd)
+        os.system('find . -type f -name "*.py" -exec chmod -x {} \;')
+
+        # Remove active key
+        # cmd = ['find', '.', '-type', 'f', '-name', '"__openerp__.py"', '-exec', 'sed', '-i', """/'active'/d""", '{}', '\;']
+        # subprocess.call(cmd)
+        os.system("find . -type f -name '__openerp__.py' -exec sed -i '/'active'/d' {} \;")
+
+        # Remove active key 2
+        # cmd = ['find', '.', '-type', 'f', '-name', '"__openerp__.py"', '-exec', 'sed', '-i', '''/"active"/d''', '{}', '\;']
+        # subprocess.call(cmd)
+        os.system('find . -type f -name "__openerp__.py" -exec sed -i "/"active"/d" {} \;')
 
         # Checking changes in repo
         cmd = ['git', 'diff']
         subprocess.call(cmd)
 
         # Make a commit
-        cmd = ['git', 'commit', '--author', author, '-am',
+        '''cmd = ['git', 'commit', '--author', author, '-am',
                "'[REF] " + repo_name + ": Standardize project with odoo guidelines.'"]
         subprocess.call(cmd)
         # print cmd
@@ -185,7 +217,7 @@ def create_repo_branches(repobases,
         cmd = ['git', 'push', org_dev,
                '8.0-standardize-' + repo_name + '-pr1-dev-' + author.lower()]
         subprocess.call(cmd)
-        # print cmd
+        # print cmd'''
 
         # Creating pull request
         if pull_request:
