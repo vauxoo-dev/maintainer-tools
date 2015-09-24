@@ -234,7 +234,7 @@ def create_repo_branches(repobases,
 
         # Make a commit
         cmd = ['git', 'commit', '--author', author, '-am',
-               "'[REF] " + repo_name + ": Standardize project with odoo guidelines.'"]
+               "[REF] " + repo_name + ": Standardize project with odoo guidelines."]
         subprocess.call(cmd)
         # print cmd
 
