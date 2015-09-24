@@ -192,6 +192,10 @@ def create_repo_branches(repobases,
         cmd = ['oca-autopep8', '-ri', git_repo_path]
         subprocess.call(cmd)
 
+        # Output of rgrep command to do CamelCase manually to modules
+        # that require it.
+        os.system('rgrep -n addons . --include=*.py | grep from | grep -v decimal_precision | grep -v amount_to_text_es_mx | grep -v report_webkit | grep -v mute_logger')
+
         # Modify wih oca-autopep8, delete vim comment,
         # Change coding comment and insert missing comment.
         cmd = ['oca-autopep8', '-ri', '--select=CW0002,W391,CW0003,CW0004',
@@ -243,6 +247,7 @@ def create_repo_branches(repobases,
                '8.0-standardize-' + repo_name + '-pr1-dev-' + author.lower()]
         subprocess.call(cmd)
         # print cmd
+
 
         # Creating pull request
         if pull_request:
