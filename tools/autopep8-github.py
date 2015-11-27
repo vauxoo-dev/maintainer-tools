@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 '''
-Script to add autopep8, CamelizeClass and automate
-git commands like create branches, commit, push and
+Script to add autopep8, CamelizeClass, create README.rst, 
+remove vim comment, remove magic comment interpreter, change coding
+comment and automate git commands like:
+create branches, commit, push and
 do pull request to Github projects.
 
 Requirements
@@ -32,6 +34,9 @@ Requirements
             Note: Check you are installing in one of your specific PATH.
                   Use $ env to check your PATHs.
 
+        - If you have troubles installing by curl and ruby use:
+            $ git clone https://github.com/Homebrew/linuxbrew.git ~/.linuxbrew
+
     See more info: http://brew.sh/linuxbrew/
 
      Install hub
@@ -46,9 +51,13 @@ Requirements
 
     See more info: https://github.com/github/hub or https://hub.github.com/
 
+    Scripts from gist-vauxoo
+    - $ git clone git@github.com:vauxoo-dev/gist-vauxoo.git
 
 How to use
-
+        Copy the required files to your folder from gist-vauxoo to your project folder:
+        $ cp DescriptionToReadmeMD.py /home/odoo/projects/demo-gitflow
+        $ cp md2rst.py /home/odoo/projects/demo-gitflow
         Execute the script file in your currently project folder:
         e. g.
         $ mkdir -p /home/odoo/projects/demo-gitflow
@@ -143,7 +152,7 @@ def create_repo_branches(repobases,
 
         # Create branch
         # Watch out with this!
-        # if you include --git-dir the files
+        # if you include --git-dir, the files
         # will be added to your current folder,
         # not to the specific --git-dir
         # Please use it inside of the folder you want to pull
@@ -151,7 +160,6 @@ def create_repo_branches(repobases,
                '-b', '8.0-standardize-' + repo_name + '-pr1-dev-' +
                author.lower(), '--track', 'vauxoo/8.0']
         subprocess.call(cmd)
-        # print cmd
 
         # README.rst
 
@@ -161,10 +169,12 @@ def create_repo_branches(repobases,
         print files
         for element in files:
             if os.path.isdir(element) and element != '__unported__':
-                if os.path.exists(os.path.join(git_repo_path, element, 'README.rst')):
+                if os.path.exists(os.path.join(git_repo_path,
+                                               element, 'README.rst')):
                     print "It doesn't need to add README.md file"
                 else:
-                    cmd = ['python', 'DescriptionToReadmeMD.py', '-p', os.path.join(git_repo_path, element)]
+                    cmd = ['python', 'DescriptionToReadmeMD.py', '-p',
+                           os.path.join(git_repo_path, element)]
                     subprocess.call(cmd)
 
         # Listing README.md files in the current project folder.
@@ -173,7 +183,8 @@ def create_repo_branches(repobases,
         for element in files:
             if os.path.isdir(element) and element != '__unported__':
                 # Git command to add new README.md files
-                cmd = ['git', 'add', os.path.join(git_repo_path, element, 'README.md')]
+                cmd = ['git', 'add',
+                       os.path.join(git_repo_path, element, 'README.md')]
                 print cmd
                 subprocess.call(cmd)
                 # Convert README.md files to README.rst files
@@ -188,41 +199,33 @@ def create_repo_branches(repobases,
         # cmd = ['python', 'md2rst.py', '-p', git_repo_path]
         # subprocess.call(cmd)
 
-        # Modify with oca-autopep8
-        cmd = ['oca-autopep8', '-ri', git_repo_path]
-        subprocess.call(cmd)
+        # Modify with oca-autopep8.
+        # Disable because in ocations causes more troubles with lines to long.
+        # cmd = ['oca-autopep8', '-ri', git_repo_path]
+        # subprocess.call(cmd)
 
         # Output of rgrep command to do CamelCase manually to modules
         # that require it.
-        os.system('rgrep -n addons . --include=*.py | grep from | grep -v decimal_precision | grep -v amount_to_text_es_mx | grep -v report_webkit | grep -v mute_logger')
+        os.system('rgrep -n addons . --include=*.py | grep from | grep -v decimal_precision | grep -v amount_to_text_es_mx | grep -v report_webkit | grep -v mute_logger')  # noqa
 
         # Modify wih oca-autopep8, delete vim comment,
         # Change coding comment and insert missing comment.
-        cmd = ['oca-autopep8', '-ri', '--select=CW0002,W391,CW0003,CW0004',
-                git_repo_path]
+        cmd = ['oca-autopep8', '-ri',
+               '--select=CW0001,CW0002,W391,CW0003,CW0004',
+               git_repo_path]
         subprocess.call(cmd)
 
         # Remove magic comment interpreter
-        # cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'sed', '-i', '/#!\/usr\/bin\/python/d', '{}', '\;']
-        # rm_magic_comment = "find . -type f -name '*.py' -exec sed -i '/#!\/usr\/bin\/python/d' {} \;"
-        # cmd = [rm_magic_comment]
-        # subprocess.call(cmd)
-        os.system("find . -type f -name '*.py' -exec sed -i '/#!\/usr\/bin\/python/d' {} \;")
+        os.system("find . -type f -name '*.py' -exec sed -i '/#!\/usr\/bin\/python/d' {} \;")  # noqa
 
         # Remove execute permissions
-        # cmd = ['find', '.', '-type', 'f', '-name', '"*.py"', '-exec', 'chmod', '-x', '{}', '\;']
-        # subprocess.call(cmd)
         os.system('find . -type f -name "*.py" -exec chmod -x {} \;')
 
         # Remove active key
-        # cmd = ['find', '.', '-type', 'f', '-name', '"__openerp__.py"', '-exec', 'sed', '-i', """/'active'/d""", '{}', '\;']
-        # subprocess.call(cmd)
-        os.system("find . -type f -name '__openerp__.py' -exec sed -i '/'active'/d' {} \;")
+        os.system("find . -type f -name '__openerp__.py' -exec sed -i '/'active'/d' {} \;")  # noqa
 
         # Remove active key 2
-        # cmd = ['find', '.', '-type', 'f', '-name', '"__openerp__.py"', '-exec', 'sed', '-i', '''/"active"/d''', '{}', '\;']
-        # subprocess.call(cmd)
-        os.system('find . -type f -name "__openerp__.py" -exec sed -i "/"active"/d" {} \;')
+        os.system('find . -type f -name "__openerp__.py" -exec sed -i "/"active"/d" {} \;')  # noqa
 
         # Checking changes in repo
         cmd = ['git', 'diff']
@@ -238,7 +241,7 @@ def create_repo_branches(repobases,
 
         # Make a commit
         cmd = ['git', 'commit', '--author', author, '-am',
-               "[REF] " + repo_name + ": Standardize project with odoo guidelines."]
+               "[REF] " + repo_name + ": Standardize project with odoo guidelines."]  # noqa
         subprocess.call(cmd)
         # print cmd
 
@@ -248,13 +251,11 @@ def create_repo_branches(repobases,
         subprocess.call(cmd)
         # print cmd
 
-
         # Creating pull request
         if pull_request:
             cmd = ['hub', 'pull-request', '-o', '-b', org + '/' + repo_name +
                    ':' + series[0], '-h', org_dev + ':' + '8.0-standardize-'
                    + repo_name + '-pr1-dev-' + author.lower()]
-            # print cmd
             subprocess.call(cmd)
 
 
@@ -300,9 +301,7 @@ def main():
 
     # Split the string into a list.
     remote_base_list = args.remotebase.split(',')
-    # print "remote_base_list", remote_base_list
     remote_dev_list = args.remotedev.split(',')
-    # print "remote_dev_list", remote_dev_list
     create_repo_branches(remote_base_list,
                          remote_dev_list,
                          args.author,
